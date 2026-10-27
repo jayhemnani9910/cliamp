@@ -123,3 +123,22 @@ func TestCleanQuery(t *testing.T) {
 		}
 	}
 }
+
+func TestParseLRCRepeatedTimestamps(t *testing.T) {
+	lines := parseLRC("[00:01.00]One\n[00:03.50][00:09.25]Chorus\n[00:07]Plain\n[00:02.00]Two")
+	want := []Line{
+		{Start: time.Second, Text: "One"},
+		{Start: 2 * time.Second, Text: "Two"},
+		{Start: 3500 * time.Millisecond, Text: "Chorus"},
+		{Start: 7 * time.Second, Text: "Plain"},
+		{Start: 9250 * time.Millisecond, Text: "Chorus"},
+	}
+	if len(lines) != len(want) {
+		t.Fatalf("got %d lines, want %d: %v", len(lines), len(want), lines)
+	}
+	for i := range want {
+		if lines[i] != want[i] {
+			t.Fatalf("line[%d] = %+v, want %+v", i, lines[i], want[i])
+		}
+	}
+}
